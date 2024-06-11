@@ -1,7 +1,7 @@
 import os
 import subprocess
 import argparse
-from elevate import elevate
+# from elevate import elevate
 
 
 def main(blender_path, scene_path, scene_name):
@@ -17,17 +17,23 @@ def main(blender_path, scene_path, scene_name):
     command = [blender_path, "--background", "--python", script_path, blend_file, scene_name, "final"]
     subprocess.run(command)
     
-    # Open Blender for viewport render with elevated privileges
-    elevate()
-    command = [blender_path, blend_file, "--python", script_path, blend_file, scene_name, "viewport"]
-    subprocess.run(command)
+    # command = [blender_path, blend_file, "--python", script_path, blend_file, scene_name, "viewport"]
+    # subprocess.run(command)
 
-    # # Open Blender for viewport render with elevated privileges
-    # elevate_command = [
-    #     'runas', '/user:Administrator',
-    #     f'"{blender_path}" "{blend_file}" --python "{script_path}" {blend_file} {scene_name} viewport'
-    # ]
-    # subprocess.run(' '.join(elevate_command), shell=True)
+    # prob should fix these commands being called via subprocess
+
+    viewport_script = os.path.join("viewport_render.py")
+    viewport_command = [
+        blender_path,
+        "--python",
+        viewport_script,
+        "--",
+        scene_path,
+        scene_name
+    ]
+    print(f"Rendering viewport image with command: {' '.join(viewport_command)}")
+    subprocess.run(viewport_command)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Render final and viewport images using Blender.")

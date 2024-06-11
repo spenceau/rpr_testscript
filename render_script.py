@@ -22,23 +22,23 @@ def render_final_image(output_file):
     bpy.ops.render.render(write_still=True)
     print(f"Final render saved to: {output_file}")
 
-def render_viewport_image(output_dir, filename):
-    # Set the viewport shading to 'RENDERED' and use Radeon ProRender
-    for area in bpy.context.window_manager.windows[0].screen.areas:
-        if area.type == 'VIEW_3D':
-            for space in area.spaces:
-                if space.type == 'VIEW_3D':
-                    space.shading.type = 'RENDERED'
-                    break
-            break
+# def render_viewport_image(output_dir, filename):
+#     # Set the viewport shading to 'RENDERED' and use Radeon ProRender
+#     for area in bpy.context.window_manager.windows[0].screen.areas:
+#         if area.type == 'VIEW_3D':
+#             for space in area.spaces:
+#                 if space.type == 'VIEW_3D':
+#                     space.shading.type = 'RENDERED'
+#                     break
+#             break
 
-    # Wait for the viewport to update
-    time.sleep(10)
+#     # Wait for the viewport to update
+#     time.sleep(10)
 
-    # Take a screenshot of the viewport
-    screenshot_path = os.path.join(output_dir, filename)
-    bpy.ops.screen.screenshot(filepath=screenshot_path)
-    print(f"Viewport render saved to: {screenshot_path}")
+#     # Take a screenshot of the viewport
+#     screenshot_path = os.path.join(output_dir, filename)
+#     bpy.ops.screen.screenshot(filepath=screenshot_path)
+#     print(f"Viewport render saved to: {screenshot_path}")
 
 def main():
     blend_file = sys.argv[-3]
@@ -77,7 +77,7 @@ def main():
         viewport_filename = f"{scene_name}_viewport.png"
         
         # Render the viewport image
-        render_viewport_image(output_dir, viewport_filename)
+        #render_viewport_image(output_dir, viewport_filename)
 
 if __name__ == "__main__":
     main()
