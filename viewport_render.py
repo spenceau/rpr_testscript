@@ -26,12 +26,12 @@ def render_viewport_image(output_dir, filename):
             break
 
     # Wait for the viewport to update
-    time.sleep(10)
+    #time.sleep(10)
 
     # Take a screenshot of the viewport
-    screenshot_path = os.path.join(output_dir, filename)
-    bpy.ops.screen.screenshot(filepath=screenshot_path)
-    print(f"Viewport render saved to: {screenshot_path}")
+    # screenshot_path = os.path.join(output_dir, filename)
+    # bpy.ops.screen.screenshot(filepath=screenshot_path)
+    # print(f"Viewport render saved to: {screenshot_path}")
 
 def main(scene_path, scene_name):
     # Set the base directory name to the scene name
