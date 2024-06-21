@@ -2,6 +2,11 @@ import os
 import bpy
 import sys
 import time
+import cv2
+import numpy as np
+import argparse
+from skimage.metrics import structural_similarity as ssim
+
 
 def create_output_dir(scene_name):
     # Set the path to the output directory based on the scene_name
@@ -15,6 +20,7 @@ def create_output_dir(scene_name):
             return None
     return output_dir
 
+
 def render_final_image(output_file):
     # Set the render engine to Radeon ProRender
     bpy.context.scene.render.engine = 'RPR'
@@ -22,23 +28,18 @@ def render_final_image(output_file):
     bpy.ops.render.render(write_still=True)
     print(f"Final render saved to: {output_file}")
 
-# def render_viewport_image(output_dir, filename):
-#     # Set the viewport shading to 'RENDERED' and use Radeon ProRender
-#     for area in bpy.context.window_manager.windows[0].screen.areas:
-#         if area.type == 'VIEW_3D':
-#             for space in area.spaces:
-#                 if space.type == 'VIEW_3D':
-#                     space.shading.type = 'RENDERED'
-#                     break
-#             break
 
-#     # Wait for the viewport to update
-#     time.sleep(10)
+def mse(imageA, imageB):
+    err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
+    err /= float(imageA.shape[0] * imageA.shape[1])
+    return err
 
-#     # Take a screenshot of the viewport
-#     screenshot_path = os.path.join(output_dir, filename)
-#     bpy.ops.screen.screenshot(filepath=screenshot_path)
-#     print(f"Viewport render saved to: {screenshot_path}")
+
+def compare_images(imageA, imageB):
+    mse_value = mse(imageA, imageB)
+    ssim_value = ssim(imageA, imageB, win_size=7, multichannel=True, channel_axis=2) # 3 channels for RGB
+    return mse_value, ssim_value
+
 
 def main():
     blend_file = sys.argv[-3]
@@ -63,21 +64,28 @@ def main():
         
         # Render the final image
         render_final_image(final_output_file)
-    elif mode == "viewport":
-        # Load the Blender file
-        bpy.ops.wm.open_mainfile(filepath=blend_file)
-        
-        # Create the output directory based on the scene name
-        output_dir = create_output_dir(scene_name)
-        if not output_dir:
-            print("Failed to create output directory. Exiting.")
-            return
-        
-        # Define file names
-        viewport_filename = f"{scene_name}_viewport.png"
-        
-        # Render the viewport image
-        #render_viewport_image(output_dir, viewport_filename)
+
+        # Perform image comparison after rendering
+        ground_truth_path = f"ground_truth/{scene_name}_actual.png"
+        render_path = final_output_file
+
+        # Load the images
+        image1 = cv2.imread(ground_truth_path)
+        image2 = cv2.imread(render_path)
+
+        # Compare the images
+        mse_value, ssim_value = compare_images(image1, image2)
+
+        # Print the results
+        print(f"Scene: {scene_name}")
+        print(f"Mean Squared Error (MSE): {mse_value:.2f}")
+        print(f"Structural Similarity Index (SSIM): {ssim_value:.2f}")
+
+        # Write results to a text file
+        with open(f"{output_dir}/{scene_name}_comparison.txt", 'w') as txt_file:
+            txt_file.write(f"Scene: {scene_name}\n")
+            txt_file.write(f"Mean Squared Error (MSE): {mse_value:.2f}\n")
+            txt_file.write(f"Structural Similarity Index (SSIM): {ssim_value:.2f}\n")
 
 if __name__ == "__main__":
     main()
